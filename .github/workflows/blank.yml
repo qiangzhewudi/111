@@ -1,0 +1,40 @@
+import socket
+import cv2
+
+# 创建一个socket对象
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+# 绑定IP地址和端口
+server_socket.bind(('0.0.0.0', 8888))
+
+# 开始监听
+server_socket.listen(5)
+print("服务器已启动，等待客户端连接...")
+
+while True:
+    # 接受客户端连接
+    client_socket, client_address = server_socket.accept()
+    print(f"客户端{client_address}已连接")
+
+    while True:
+        # 接收客户端发送的视频流数据
+        video_data = client_socket.recv(1024 * 1024)
+        if not video_data:
+            break
+
+        # 将接收到的数据解码为图像
+        frame = cv2.imdecode(np.frombuffer(video_data, dtype=np.uint8), cv2.IMREAD_COLOR)
+
+        # 显示图像
+        cv2.imshow('Video Stream', frame)
+
+        # 按下'q'键退出
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    # 关闭客户端连接
+    client_socket.close()
+    print(f"客户端{client_address}已断开连接")
+
+# 关闭服务器端socket
+server_socket.close()
